@@ -6,8 +6,10 @@ Monte um personagem a partir de um corpo humano base, vista roupas, troque cabel
 sliders e veja tudo reagir com física, em tempo real. Feito em Unity 6.3 LTS (URP), com modelos base do projeto
 [MakeHuman](http://www.makehumancommunity.org/) (CC0).
 
-> **Status: planejamento / Fase 0.** O projeto Unity ainda não foi criado. A arquitetura, o roadmap e o contrato
-> de dados estão definidos em [`docs/`](docs/README.md).
+> **Status: fundação pronta (Fases 0 e 1).** Arquitetura, contratos, domínio do personagem (equipar, undo/redo,
+> presets JSON) e CI estão no repositório, com 39 testes passando. Próximo passo: criar o projeto Unity
+> ([setup](docs/06-setup.md#63-criar-o-projeto-unity-uma-única-vez)) e iniciar a Fase 2 (Addressables). Veja o
+> [roadmap](docs/04-roadmap.md).
 
 ---
 
@@ -61,7 +63,8 @@ A interface e o código 3D não se conhecem: os dois falam só com o modelo do p
 | [Pipeline de conteúdo](docs/03-pipeline-de-conteudo.md) | MakeHuman → Blender → Unity: corpo, roupas, cabelos, blendshapes |
 | [Roadmap](docs/04-roadmap.md) | Fases, entregas e critérios de "pronto" |
 | [Decisões e riscos](docs/05-decisoes-e-riscos.md) | Por que cada escolha foi feita, riscos e questões em aberto |
-| [Setup](docs/06-setup.md) | Requisitos, clone com LFS, criação do projeto, pacotes |
+| [Setup](docs/06-setup.md) | Requisitos, clone com LFS, criação do projeto, pacotes, CI |
+| [ADRs](docs/adr/README.md) | O registro de cada decisão de arquitetura |
 
 ## Roadmap resumido
 
@@ -80,8 +83,14 @@ git lfs install
 git clone https://github.com/PedroCavalcanti-coder/Weld-Studio.git
 ```
 
-O passo a passo completo, incluindo a criação do projeto Unity na Fase 0, está em
-[docs/06-setup.md](docs/06-setup.md).
+Verificações rápidas, sem abrir a Unity:
+
+```bash
+python3 Tools/ci/check_repo.py          # .meta, Git LFS, pastas proibidas
+dotnet test Tools/ci/DomainTests        # testes de domínio (.NET 8 SDK)
+```
+
+O passo a passo completo, incluindo a criação do projeto Unity, está em [docs/06-setup.md](docs/06-setup.md).
 
 ## Estrutura do repositório
 
@@ -90,15 +99,15 @@ Assets/WeldStudio/   código do aplicativo (Runtime, Editor, Tests, Shaders, Set
 Assets/Content/      conteúdo Addressable: corpo, roupas, cabelos, animações (content packs)
 Assets/Modules/      extensões opcionais (ex.: ponte com o Magica Cloth 2)
 SourceAssets/        fontes de arte (.blend, MakeHuman) em LFS, fora da Unity
-Tools/               scripts de Blender e de CI
+Tools/ci/            verificador do repositório e testes de domínio em .NET
 docs/                planejamento e decisões de arquitetura
 ```
 
 ## Contribuindo
 
-O projeto está na fase de fundação. Um guia de contribuição (`CONTRIBUTING.md`) faz parte da Fase 0. Até lá,
-issues com ideias, dúvidas e críticas à arquitetura são bem-vindas. Comece pelo [roadmap](docs/04-roadmap.md) e
-pelas [questões em aberto](docs/05-decisoes-e-riscos.md#53-questões-em-aberto).
+Leia o [guia de contribuição](CONTRIBUTING.md) e o [código de conduta](CODE_OF_CONDUCT.md). Issues com ideias,
+dúvidas e críticas à arquitetura são bem-vindas. Comece pelo [roadmap](docs/04-roadmap.md) e pelas
+[questões em aberto](docs/05-decisoes-e-riscos.md#53-questões-em-aberto).
 
 Regras que valem desde já:
 
@@ -113,6 +122,7 @@ Regras que valem desde já:
 - **Código:** [MIT](LICENSE).
 - **Modelos base do MakeHuman:** CC0. O projeto usa apenas os *assets* do MakeHuman, nunca o seu código (AGPL).
 - **Conteúdo da comunidade:** cada item declara autor, licença e origem; os créditos aparecem no aplicativo.
+- Lista completa de terceiros: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - **Magica Cloth 2** é um produto comercial de terceiros. **Não** faz parte deste repositório e não é necessário
   para usar o Weld Studio.
 

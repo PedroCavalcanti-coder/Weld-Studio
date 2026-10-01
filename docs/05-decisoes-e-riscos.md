@@ -2,14 +2,15 @@
 
 ## 5.1 Registro de decisões
 
-Cada decisão vira uma ADR em `docs/adr/` na Fase 0. Esta tabela é o resumo.
+Cada decisão tem uma ADR completa em [`docs/adr/`](adr/README.md) (D1 = ADR-0001, D2 = ADR-0002, ...). Esta
+tabela é o resumo.
 
 | # | Decisão | Motivo principal | Alternativa descartada |
 |---|---------|------------------|------------------------|
 | D1 | Raiz do repo = raiz do projeto Unity | Clonar e abrir; `.gitignore` oficial já assume isso | Projeto Unity em subpasta |
 | D2 | MVP + DI com VContainer | UI desacoplada e testável, undo/redo, sem singletons | MVC, MVVM, Zenject, Service Locator ([01 §1.4](01-arquitetura.md#14-padrão-arquitetural-mvp--injeção-de-dependência-vcontainer)) |
 | D3 | Assemblies por camada; features dependem só do Core | Fronteiras garantidas pelo compilador, builds incrementais rápidos | Tudo em `Assembly-CSharp` |
-| D4 | `Awaitable` nativo da Unity 6 | Zero dependência extra para async | UniTask |
+| D4 | `Task` nas APIs assíncronas; `Awaitable` para frames e threads | Composição (`Task.WhenAll`), testes em .NET puro, zero dependência extra | Só `Awaitable`; UniTask |
 | D5 | Newtonsoft JSON para presets | Dicionários, conversores, evolução de schema | `JsonUtility` |
 | D6 | Somente Addressables; `Resources/` proibida | Memória sob demanda, release determinístico, mods | `Resources`, AssetBundles manuais |
 | D7 | ID do item = GUID do asset (com preservação de IDs legados) | Único por construção, sobrevive a renomear e mover | ID digitado à mão, nome do arquivo |
@@ -18,6 +19,8 @@ Cada decisão vira uma ADR em `docs/adr/` na Fase 0. Esta tabela é o resumo.
 | D10 | Esqueleto *Game engine* do MakeHuman como base | Compatível com Humanoid, mais leve que o *default* | Esqueleto *default* (ossos faciais desnecessários com blendshapes) |
 | D11 | Terceiros via UPM; assets pagos nunca commitados | Licenças e tamanho do repo | Copiar plugins para `Assets/` |
 | D12 | Código em inglês; docs de planejamento em português | Alcance internacional sem perder clareza agora | Tudo em português |
+| D13 | Nome do projeto: **Weld Studio** (namespaces `WeldStudio`, extensão `.weld.json`, labels `weld.`) | Mesmo nome do repositório | Nome provisório |
+| D14 | Testes de domínio também em .NET puro no CI, contra stubs da Unity | Feedback rápido e sem licença Unity | Só testes dentro da Unity |
 
 ## 5.2 Riscos técnicos
 
@@ -39,9 +42,10 @@ Cada decisão vira uma ADR em `docs/adr/` na Fase 0. Esta tabela é o resumo.
 
 ## 5.3 Questões em aberto
 
+Resolvidas: **Q1** (nome do projeto) → Weld Studio, ver D13.
+
 | # | Questão | Decidir antes de |
 |---|---------|------------------|
-| Q1 | Nome final do projeto ("Weld Studio" é o nome do repositório; namespaces usam `WeldStudio`) | Fase 0 (renomear depois custa caro) |
 | Q2 | Rig oficial: *Game engine* puro ou com ossos de jiggle (seios, glúteos, barriga)? Se houver ossos extras, `ClothingItemData.DefaultRigId` passa a ser um ID próprio (ex.: `weld.humanoid.v1`), porque roupas sobre essas regiões precisam de peso nesses ossos. | Primeiro conteúdo definitivo (Fase 3) |
 | Q3 | Canal de vértice para o ID de região (proposta: UV3.x) | Fase 3 |
 | Q4 | Formatos de export suportados na v1.0 (GLB certo; FBX? VRM?) | Fase 9 |

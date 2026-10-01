@@ -16,22 +16,29 @@ Legenda: `[x]` feito · `[ ]` a fazer
 
 ---
 
-## Fase 0 – Fundação do repositório (atual)
+## Fase 0 – Fundação do repositório
 
 Objetivo: qualquer pessoa clona, abre e contribui com o mesmo setup.
 
 - [x] Planejamento em `docs/` e README
-- [x] Contrato de dados em C# (`CatalogItemData`, `ClothingItemData`, enums, `MaterialVariant`,
-      `PhysicsProfileData`) compilado contra stubs
-- [ ] `.gitattributes`: regras de LFS para binários, Smart Merge para YAML da Unity
-- [ ] `.gitignore`: acrescentar `Assets/MagicaCloth2/` e arquivos de SO (`.DS_Store`, `Thumbs.db`)
-- [ ] Projeto Unity 6.3 LTS na raiz (ver [Setup](06-setup.md)): URP, espaço de cor Linear, Force Text, Visible
-      Meta Files
-- [ ] Pacotes instalados e `packages-lock.json` versionado
-- [ ] `.meta` gerados pela Unity e versionados (inclusive dos arquivos já escritos)
-- [ ] CI no GitHub Actions (GameCI): testes EditMode em todo PR, com checkout de LFS e cache de `Library/`
-- [ ] `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `THIRD_PARTY_NOTICES.md`, templates de issue e PR
-- [ ] ADR 0001 a 0006 registrando as decisões de [05](05-decisoes-e-riscos.md)
+- [x] Contrato de dados em C# (`CatalogItemData`, `ClothingItemData`, enums, `MaterialVariant`, `PhysicsProfileData`)
+- [x] `.gitattributes`: LFS para binários (padrões sem diferenciar maiúsculas), Smart Merge para YAML da Unity
+- [x] `.gitignore`: `Assets/MagicaCloth2/`, backups do Blender, arquivos de SO, saídas de `Tools/`
+- [x] `.meta` versionados para todos os arquivos e pastas existentes (GUIDs estáveis desde o primeiro clone)
+- [x] CI no GitHub Actions (`.github/workflows/ci.yml`):
+  - [x] higiene do repositório (`Tools/ci/check_repo.py`): `.meta` faltando ou órfão, binário fora do LFS,
+        pasta `Resources/`, asset pago versionado
+  - [x] testes de domínio em .NET puro contra stubs da Unity (`Tools/ci/DomainTests`, [ADR-0014](adr/0014-testes-de-dominio-tambem-rodam-em-net-puro-no-ci.md))
+  - [x] testes da Unity (GameCI), que pulam com aviso até existirem o projeto e o secret `UNITY_LICENSE`
+- [x] `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `THIRD_PARTY_NOTICES.md`, templates de issue e PR
+- [x] ADRs 0001 a 0014 em [`docs/adr/`](adr/README.md)
+- [x] Nome do projeto definido: **Weld Studio** ([ADR-0013](adr/0013-nome-do-projeto-weld-studio.md))
+- [ ] **Requer a Unity (máquina do mantenedor):** criar o projeto Unity 6.3 LTS na raiz ([Setup §6.3](06-setup.md#63-criar-o-projeto-unity-uma-única-vez)):
+      URP, espaço de cor Linear, Force Text, Visible Meta Files
+- [ ] **Requer a Unity:** instalar os pacotes e versionar `Packages/manifest.json` e `packages-lock.json`
+- [ ] **Requer a Unity:** abrir o projeto, confirmar zero erros no console e zero `.meta` novos gerados para os
+      arquivos existentes; rodar os testes EditMode no Test Runner
+- [ ] Configurar os secrets `UNITY_LICENSE`, `UNITY_EMAIL` e `UNITY_PASSWORD` no GitHub
 
 **Pronto quando:** um clone novo abre na Unity sem erros, sem `.meta` gerados localmente, e o CI fica verde.
 
@@ -39,15 +46,21 @@ Objetivo: qualquer pessoa clona, abre e contribui com o mesmo setup.
 
 Objetivo: toda a lógica do personagem funcionando e testada, sem cena.
 
-- [ ] Interfaces em `Core/Abstractions`: `IEquipable`, `ICharacterModifier`, `ICharacterRig`, `IAssetProvider`,
-      `ICatalogService`, `IPresetRepository`, `IPhysicsBackend`
-- [ ] `CharacterModel`: equipar e desequipar com regra de conflito, variantes, modificadores, eventos
-- [ ] `ICommand` + `CommandHistory` (undo/redo com coalescência)
-- [ ] `CharacterPreset` (DTO) + `JsonPresetRepository` (assíncrono, atômico, `schemaVersion`, preservação de IDs
-      desconhecidos)
-- [ ] Testes EditMode cobrindo todo o domínio e arquivos-exemplo de preset
+- [x] Interfaces em `Core/Abstractions`: `IEquipableDefinition`, `IEquipable`, `IEquipableFactory`,
+      `ICharacterModifier`, `ICharacterRig`, `IAssetProvider` (+ `AssetLease<T>`), `ICatalogService`,
+      `IPresetRepository`, `IPhysicsBackend`
+- [x] `CharacterModel`: equipar e desequipar com regra de conflito, variantes, modificadores, eventos, aplicação de
+      preset com diff e preservação de itens não resolvidos
+- [x] `ICommand` + `CommandHistory` (undo/redo com coalescência) e comandos `Equip`, `Unequip`, `SetVariant`,
+      `SetModifier`, `ApplyPreset`
+- [x] `CharacterPreset` (DTO) + `JsonPresetRepository` (assíncrono, gravação atômica, `schemaVersion`) +
+      `PresetMigrator`
+- [x] 39 testes EditMode cobrindo o domínio e a persistência, passando em .NET 8 com C# 9
+- [ ] Rodar os mesmos testes dentro da Unity (depende da Fase 0)
+- [ ] Arquivos-exemplo de preset versionados por schema (entram junto com a primeira migração, v1 → v2)
 
 **Pronto quando:** equipar, desequipar, desfazer, salvar e carregar funcionam nos testes, sem nenhuma cena.
+✅ Cumprido em .NET; falta a confirmação dentro da Unity.
 
 ## Fase 2 – Conteúdo e Addressables
 

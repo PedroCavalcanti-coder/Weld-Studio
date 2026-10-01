@@ -1,7 +1,8 @@
 # 6. Setup
 
-> Status: o projeto Unity **ainda não foi criado** (tarefa da Fase 0). A seção 6.3 descreve como criá-lo uma vez;
-> depois disso, contribuidores só seguem 6.1, 6.2 e 6.4.
+> Status: o código, os `.meta`, o `.gitattributes` e o CI já estão no repositório. O projeto Unity
+> (`ProjectSettings/`, `Packages/`) **ainda não foi criado**: a seção 6.3 descreve como criá-lo uma única vez.
+> Depois disso, contribuidores só seguem 6.1, 6.2, 6.4 e 6.6.
 
 ## 6.1 Requisitos
 
@@ -10,6 +11,8 @@
 | Unity Hub + **Unity 6.3 LTS** | a versão exata fica em `ProjectSettings/ProjectVersion.txt` | Editor |
 | Git | recente | Versionamento |
 | **Git LFS** | 3.x | Obrigatório: todo binário do projeto está no LFS |
+| Python | 3.8+ | Verificador de higiene do repositório (`Tools/ci/check_repo.py`) |
+| .NET SDK | 8.0 | Opcional: testes de domínio sem abrir a Unity (`dotnet test Tools/ci/DomainTests`) |
 | IDE C# | Rider, Visual Studio ou VS Code (com extensão Unity) | Código |
 | Blender + MPFB2 | Blender LTS atual | Apenas para quem produz conteúdo |
 | Magica Cloth 2 | Asset Store | Opcional e pago: só para quem trabalha no módulo de física avançada |
@@ -26,26 +29,30 @@ git lfs pull                    # garante que os binários vieram
 Se uma textura ou FBX aparecer na Unity como arquivo de texto pequeno ou corrompido, o LFS não baixou: rode
 `git lfs pull`.
 
-## 6.3 Criar o projeto Unity (uma única vez, Fase 0)
+## 6.3 Criar o projeto Unity (uma única vez)
 
-A Unity Hub não cria projeto em pasta que já tem arquivos. Por isso:
+A Unity Hub não cria projeto em pasta que já tem arquivos. Além disso, o código existente referencia Addressables e
+Newtonsoft: abrir o repositório antes de instalar esses pacotes dá erros de compilação. Por isso:
 
 1. Na Unity Hub, crie um projeto **Unity 6.3 LTS** com o template **Universal 3D** numa pasta temporária.
-2. Copie para a raiz do repositório: `ProjectSettings/`, `Packages/` e `Assets/Settings/` (com os `.meta`, que
-   preservam as referências do URP).
-3. Abra a raiz do repositório na Unity Hub (*Add → Add project from disk*).
-4. Dentro da Unity:
-   1. mova `Assets/Settings` para `Assets/WeldStudio/Settings` (movendo pelo Editor os GUIDs são preservados);
-   2. apague o conteúdo de exemplo do template;
-   3. crie `Assets/WeldStudio/Scenes/Boot.unity`.
-5. Confira em *Project Settings*:
+2. **Nesse projeto temporário**, instale os pacotes da Fase 0 listados em 6.5 (Addressables, Newtonsoft JSON, Test
+   Framework, VContainer).
+3. Feche a Unity e copie para a raiz do repositório: `ProjectSettings/`, `Packages/` e `Assets/Settings/` (com
+   os `.meta`, que preservam as referências do URP). Não copie nada além disso.
+4. Abra a raiz do repositório na Unity Hub (*Add → Add project from disk*). O console deve ficar sem erros.
+5. Dentro da Unity:
+   1. mova `Assets/Settings` para `Assets/WeldStudio/Settings` (movendo pelo Editor, os GUIDs são preservados);
+   2. crie `Assets/WeldStudio/Scenes/Boot.unity`;
+   3. em *Window → General → Test Runner → EditMode*, rode os testes: os 39 devem passar.
+6. Confira em *Project Settings*:
    - **Editor → Asset Serialization: Force Text**
    - **Version Control → Mode: Visible Meta Files**
    - **Player → Other Settings → Color Space: Linear**
    - **Graphics / Quality:** URP Asset de desktop atribuído. Os assets `Mobile_*` do template podem ser removidos
      depois de ajustar os níveis de qualidade.
-6. Instale os pacotes (6.5), deixe a Unity gerar os `.meta` dos arquivos já existentes em
-   `Assets/WeldStudio/Runtime/Core/` e commite tudo, inclusive o `packages-lock.json`.
+7. Rode `python3 Tools/ci/check_repo.py`. Ele não deve acusar nenhum `.meta` novo para os arquivos que já
+   existiam; se acusar, a Unity regenerou um GUID e isso precisa ser investigado antes do commit.
+8. Commite `ProjectSettings/`, `Packages/manifest.json`, `Packages/packages-lock.json`, os settings e a cena.
 
 ## 6.4 Smart Merge (recomendado)
 
@@ -90,10 +97,22 @@ O UI Toolkit já vem embutido na Unity 6 e não precisa de pacote.
 `.gitignore`. A partir da Fase 7, um script de Editor detecta o plugin e ativa o define `WELD_MAGICACLOTH2`,
 habilitando o módulo `Assets/Modules/MagicaClothBridge/`.
 
-## 6.6 CI (Fase 0)
+## 6.6 Verificações locais e CI
 
-GitHub Actions com as actions do GameCI (`unity-test-runner`, depois `unity-builder`):
+Antes de abrir um PR:
 
-- checkout com `lfs: true` e cache de `Library/`;
-- exige secrets de licença da Unity no repositório (ver a documentação do GameCI para licença Personal);
-- roda testes EditMode e PlayMode em todo PR.
+```bash
+python3 Tools/ci/check_repo.py          # .meta faltando/órfão, binário fora do LFS, Resources/, assets pagos
+dotnet test Tools/ci/DomainTests        # testes de Core e Persistence sem Unity
+```
+
+O workflow `.github/workflows/ci.yml` roda três jobs em todo PR:
+
+| Job | O que faz | Precisa de |
+|-----|-----------|------------|
+| Repository hygiene | `Tools/ci/check_repo.py` | nada |
+| Domain tests | `dotnet test Tools/ci/DomainTests` (.NET 8, C# 9, warnings como erro) | nada |
+| Unity tests | GameCI `unity-test-runner`, EditMode + PlayMode, com LFS e cache de `Library/` | projeto Unity criado (6.3) e secrets `UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD` |
+
+Enquanto o projeto Unity ou os secrets não existirem, o job da Unity termina com sucesso e deixa um aviso dizendo
+o que falta. Para gerar o `UNITY_LICENSE` de uma licença Personal, siga a documentação de ativação do GameCI.

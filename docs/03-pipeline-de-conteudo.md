@@ -130,7 +130,7 @@ Usamos apenas os **assets** (CC0) e os formatos de arquivo.
 
 ## 3.8 Git LFS
 
-Tudo o que é binário vai para o LFS pelo `.gitattributes` (Fase 0): `.fbx`, `.obj`, `.blend`, `.png`, `.jpg`,
+Tudo o que é binário vai para o LFS pelo `.gitattributes` (padrões sem diferenciar maiúsculas): `.fbx`, `.obj`, `.blend`, `.png`, `.jpg`,
 `.tga`, `.psd`, `.exr`, `.tif`, `.spp`, `.sbsar`, áudio, vídeo, fontes, `.dll` etc. YAML da Unity (`.prefab`,
-`.asset`, `.mat`, `.unity`, `.meta`) continua como texto, com Smart Merge. A cota de LFS do GitHub precisa ser
-acompanhada (risco R6).
+`.asset`, `.mat`, `.unity`, `.meta`) continua como texto, com Smart Merge. O CI (`Tools/ci/check_repo.py`)
+recusa binários commitados sem LFS. A cota de LFS do GitHub precisa ser acompanhada (risco R6).

@@ -10,6 +10,7 @@ Planejamento técnico do projeto. Leia na ordem:
 | 4 | [Roadmap](04-roadmap.md) | Fases de desenvolvimento, entregas e critérios de "pronto" |
 | 5 | [Decisões e riscos](05-decisoes-e-riscos.md) | Registro de decisões, riscos técnicos e questões em aberto |
 | 6 | [Setup](06-setup.md) | Como preparar a máquina e criar/abrir o projeto Unity |
+| – | [ADRs](adr/README.md) | Registro completo de cada decisão de arquitetura |
 
 ## Convenções destes documentos
 

@@ -1,7 +1,7 @@
 # 2. Contrato de dados
 
-> Status: **Decidido** para `CatalogItemData`, `ClothingItemData` e enums de domínio (código já escrito).
-> **Proposta** para os demais tipos listados em 2.2.
+> Status: **Decidido e implementado** para `CatalogItemData`, `ClothingItemData`, enums de domínio e formato do
+> preset JSON (v1). **Proposta** para os demais tipos listados em 2.2.
 
 ## 2.1 Princípios
 
@@ -64,7 +64,7 @@ Membros públicos: propriedades somente-leitura para cada campo, `HasTag(string)
 ## 2.4 `ClothingItemData`
 
 Arquivo: `Assets/WeldStudio/Runtime/Core/Data/ClothingItemData.cs` · Menu: *Create → Weld Studio → Catalog →
-Clothing Item*
+Clothing Item* · Implementa `IEquipableDefinition`, a visão que o `CharacterModel` usa para qualquer equipável.
 
 | Grupo | Campo | Tipo | Uso |
 |-------|-------|------|-----|
@@ -84,7 +84,8 @@ Membros públicos além das propriedades:
 |--------|-----------|
 | `ConflictsWith(ClothingItemData)` | `true` quando as duas peças dividem pelo menos um slot **na mesma camada**. |
 | `TryGetVariant(string, out MaterialVariant)` | Busca uma variante pelo ID (usado ao aplicar presets). |
-| `DefaultVariant` | Primeira variante, ou `null` quando valem os materiais do prefab. |
+| `DefaultVariant` / `DefaultVariantId` | Primeira variante (ou seu ID), ou `null` quando valem os materiais do prefab. |
+| `HasVariant(string)` | Se a variante existe (parte de `IEquipableDefinition`). |
 | `HasBodyMask` | Se há máscara de textura atribuída. |
 | `CollectValidationErrors(...)` | Base + prefab atribuído, rig não vazio, pelo menos um slot, IDs de variante não vazios e únicos e, no Editor, prefab com `SkinnedMeshRenderer`. |
 
@@ -110,7 +111,8 @@ bit é o ID de região gravado na malha do corpo**, por isso nunca muda.
 ### Regra de conflito
 
 Duas peças conflitam se e somente se `(slotsA & slotsB) != 0 && camadaA == camadaB`. Equipar uma peça remove
-todas as que conflitam com ela.
+todas as que conflitam com ela. A regra está em `EquipmentRules.Conflicts` (`Core/Domain`) e vale para qualquer
+`IEquipableDefinition`.
 
 | Peça A | Peça B | Conflito? |
 |--------|--------|-----------|
@@ -152,7 +154,8 @@ editado, um `AssetPostprocessor` (Fase 2) vai reforçar a regra no momento do im
 
 ## 2.8 Formato do preset JSON
 
-**Proposta (schema v1)**, a implementar na Fase 1:
+**Implementado (schema v1)**: `CharacterPreset` (`Core/Domain/Presets`), `PresetJson`, `PresetMigrator` e
+`JsonPresetRepository` (`Runtime/Persistence`). Exemplo:
 
 ```json
 {
@@ -183,8 +186,10 @@ Regras:
 - **IDs desconhecidos** (mod não instalado) são reportados ao usuário **e preservados** ao salvar de novo. Abrir
   e salvar um preset não pode apagar silenciosamente o que pertence a um pack ausente.
 - Variante desconhecida → variante padrão, com aviso.
-- Modificador desconhecido → preservado. Valor fora da faixa → limitado à faixa. Modificador ausente → valor
-  padrão.
+- Modificador desconhecido → preservado. Valor fora da faixa → limitado à faixa no momento de aplicar (o
+  `ICharacterModifier` conhece a faixa; o modelo guarda o valor como veio). Modificador ausente → valor padrão.
+  Valores não finitos (NaN, infinito) são descartados.
+- Campos desconhecidos no JSON são ignorados; entradas de equipamento sem `itemId` são descartadas.
 - Gravação atômica: escreve em `<arquivo>.tmp` e troca pelo definitivo.
 - Extensão: `.weld.json`, numa pasta de presets do usuário (`Application.persistentDataPath/Presets` por padrão,
   com opção de "Salvar como…" em qualquer lugar).
@@ -215,14 +220,18 @@ Regras:
 grupos e labels será automatizada por uma ferramenta de Editor (Fase 2), para que contribuidores não precisem
 configurar Addressables à mão.
 
-## 2.10 Status dos arquivos já escritos
+## 2.10 Onde está o código
 
-| Arquivo | Status |
-|---------|--------|
-| `Runtime/Core/WeldStudio.Core.asmdef` | Escrito |
-| `Runtime/Core/Domain/EquipmentSlot.cs`, `EquipmentLayer.cs`, `BodyRegion.cs` | Escritos |
-| `Runtime/Core/Data/CatalogItemData.cs`, `ClothingItemData.cs`, `MaterialVariant.cs`, `PhysicsProfileData.cs` | Escritos |
+| Pasta (`Assets/WeldStudio/`) | Conteúdo |
+|------------------------------|----------|
+| `Runtime/Core/Data/` | `CatalogItemData`, `ClothingItemData`, `MaterialVariant`, `PhysicsProfileData` |
+| `Runtime/Core/Domain/` | `EquipmentSlot`, `EquipmentLayer`, `BodyRegion`, `EquipmentRules`, `EquippedItem`, `EquipmentChange`, `CharacterModel` |
+| `Runtime/Core/Domain/Presets/` | `CharacterPreset`, `EquipmentEntry`, `PresetMetadata`, `PresetApplyReport`, `PresetFormatException` |
+| `Runtime/Core/Domain/Commands/` | `ICommand`, `CommandHistory`, `EquipCommand`, `UnequipCommand`, `SetVariantCommand`, `SetModifierCommand`, `ApplyPresetCommand` |
+| `Runtime/Core/Abstractions/` | Interfaces da fundação ([01 §1.5](01-arquitetura.md#15-classes-e-interfaces-fundamentais)) |
+| `Runtime/Persistence/` | `PresetJson`, `PresetMigrator`, `JsonPresetRepository` |
+| `Tests/EditMode/` | 39 testes NUnit de domínio e persistência |
 
-Todos compilam sem erros nem avisos contra stubs da API da Unity, nas configurações player e Editor
-(`UNITY_EDITOR`). Ainda **não** foram abertos numa Unity real: os arquivos `.meta` serão gerados e versionados na
-Fase 0, quando o projeto for criado.
+Tudo compila com C# 9 e warnings tratados como erro, e os testes passam em .NET 8 contra stubs da API da Unity
+([ADR-0014](adr/0014-testes-de-dominio-tambem-rodam-em-net-puro-no-ci.md)). Ainda falta abrir o projeto numa Unity
+real (Fase 0). Os `.meta` já estão versionados com GUIDs fixos.

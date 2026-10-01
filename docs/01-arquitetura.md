@@ -39,7 +39,9 @@ Weld-Studio/                              # raiz do repo = raiz do projeto Unity
 │   └── textures/                         # .psd / .spp / .sbsar de origem
 ├── Tools/                                # scripts que rodam fora da Unity
 │   ├── blender/                          # exportadores Python (FBX, regiões do corpo, shape keys)
-│   └── ci/                               # validadores de linha de comando
+│   └── ci/
+│       ├── check_repo.py                 # higiene: .meta, LFS, Resources/, assets pagos
+│       └── DomainTests/                  # testes do Core em .NET puro contra stubs da Unity (ADR-0014)
 ├── Packages/
 │   ├── manifest.json                     # URP, Addressables, Animation Rigging, VContainer...
 │   └── packages-lock.json
@@ -247,7 +249,7 @@ e mods registram catálogos adicionais aqui.
 
 ### 7. `IPresetRepository` → `JsonPresetRepository` (`WeldStudio.Persistence`)
 Salva e carrega `CharacterPreset` em JSON de forma assíncrona: serialização em thread de background
-(`Awaitable.BackgroundThreadAsync`), I/O assíncrono, gravação atômica (arquivo temporário + troca), campo
+(`Task.Run`), I/O assíncrono, gravação atômica (arquivo temporário + troca), campo
 `schemaVersion` com migrações. O preset guarda só IDs e valores, nunca referências a objetos Unity: é seguro fora
 da main thread e portátil entre máquinas. IDs desconhecidos (mod ausente) são reportados, não quebram o
 carregamento. Formato em [02-contrato-de-dados.md](02-contrato-de-dados.md#28-formato-do-preset-json).
@@ -259,6 +261,9 @@ carregamento. Formato em [02-contrato-de-dados.md](02-contrato-de-dados.md#28-fo
 | `CharacterAssembler` | Orquestrador: escuta o `CharacterModel` e usa `IAssetProvider`, `IEquipable`, `ICharacterRig` e `IPhysicsBackend` para refletir o estado na cena. |
 | `IPhysicsBackend` | Contrato de backend de física: `UnityClothBackend`, `SpringBoneBackend` (nativo do projeto), `MagicaCloth2Backend` (módulo opcional). |
 | `ICommand` / `CommandHistory` | Comandos reversíveis para undo/redo, com coalescência (arrastar um slider = um passo de undo). |
+| `IEquipableDefinition` | Visão de dados de qualquer equipável (ID, rig, slots, camada, variantes). É o que o `CharacterModel` enxerga; `ClothingItemData` a implementa. |
+| `IEquipableFactory` | Cria o `IEquipable` certo para cada tipo de definição; registrada no container. |
+| `AssetLease<T>` | Asset carregado + obrigação de liberá-lo: `Dispose()` libera exatamente uma vez. |
 | `SkinnedEquipable` | Implementação padrão de `IEquipable` para roupas e cabelos. |
 | `ModifierDefinition` (SO) | Definição em dados de um slider (blendshape alvo, faixa, curva, categoria). |
 | Presenters/Views | `CatalogPresenter`, `ModifierPanelPresenter`, `VariantPickerPresenter`, `PresetPresenter`, etc. |
@@ -317,7 +322,10 @@ ser anexado.
 
 ## 1.8 Assincronia e threading
 
-- **Decidido:** `Awaitable` nativo da Unity 6 (sem UniTask). Handles do Addressables são aguardados via `.Task`.
+- **Decidido ([ADR-0004](adr/0004-task-nas-apis-assincronas-awaitable-para-frames-e-threads.md)):** as interfaces
+  públicas retornam `Task` (componíveis com `Task.WhenAll` e testáveis em .NET puro). O `Awaitable` da Unity 6 é
+  usado internamente para esperar frames e trocar de thread. Handles do Addressables são aguardados via `.Task`.
+  Sem UniTask.
 - Toda API assíncrona recebe `CancellationToken`. O token de vida do escopo cancela tudo ao destruir o personagem.
 - Objetos Unity só são tocados na main thread. Trabalho em background só opera sobre DTOs puros.
 - Exceções em operações assíncronas são registradas e transformadas em feedback na UI, nunca engolidas.
@@ -388,6 +396,7 @@ ser anexado.
 
 | Nível | O que cobre | Onde roda |
 |-------|-------------|-----------|
+| Domínio em .NET | Os mesmos testes EditMode de `Core` e `Persistence`, compilados com .NET 8 contra stubs da Unity | CI em todo PR, sem licença Unity |
 | EditMode | `CharacterModel`, regras de conflito, comandos e undo, serialização e migração de presets, validação de dados | CI em todo PR |
 | PlayMode | Remapeamento de ossos com prefabs de teste, sync de blendshapes, ciclo load/release do Addressables, backends de física | CI em todo PR |
 | Performance | Tempo de troca de item, alocações por frame, memória após ciclos de equipar/desequipar (Performance Testing package) | CI noturno |
