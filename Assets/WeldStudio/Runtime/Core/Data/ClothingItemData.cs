@@ -10,7 +10,7 @@ namespace WeldStudio.Core.Data
     /// character assembler needs to put it on the shared skeleton.
     /// </summary>
     [CreateAssetMenu(fileName = "NewClothingItem", menuName = "Weld Studio/Catalog/Clothing Item", order = 0)]
-    public class ClothingItemData : CatalogItemData
+    public class ClothingItemData : CatalogItemData, IEquipableDefinition
     {
         /// <summary>Rig the official content is authored against (MakeHuman "Game engine" skeleton).</summary>
         public const string DefaultRigId = "makehuman.game_engine";
@@ -72,6 +72,8 @@ namespace WeldStudio.Core.Data
         /// <summary>Default colourway, or null when the prefab's own materials are used.</summary>
         public MaterialVariant DefaultVariant => materialVariants.Length > 0 ? materialVariants[0] : null;
 
+        public string DefaultVariantId => DefaultVariant?.Id;
+
         /// <summary>
         /// Profiles in order of preference. Entries can be null when the module that defines their type is
         /// not installed (e.g. Magica Cloth 2); consumers skip them and fall back to the next one.
@@ -79,8 +81,9 @@ namespace WeldStudio.Core.Data
         public IReadOnlyList<PhysicsProfileData> PhysicsProfiles => physicsProfiles;
 
         /// <summary>True when both items cannot be worn together: they share a slot on the same layer.</summary>
-        public bool ConflictsWith(ClothingItemData other) =>
-            other != null && layer == other.layer && (slots & other.slots) != 0;
+        public bool ConflictsWith(ClothingItemData other) => EquipmentRules.Conflicts(this, other);
+
+        public bool HasVariant(string variantId) => TryGetVariant(variantId, out MaterialVariant _);
 
         public bool TryGetVariant(string variantId, out MaterialVariant variant)
         {

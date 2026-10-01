@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Compiles the Unity-independent part of Weld Studio (Core, Persistence) and its EditMode tests with
+    plain .NET, against the stubs in UnityStubs.cs. Lets CI run the domain tests on every pull request
+    without a Unity license. Run with:  dotnet test Tools/ci/DomainTests
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Unity 6 compiles C# 9: keep the same language version so nothing newer slips in. -->
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- CS0649: [SerializeField] fields are assigned by Unity's serializer, which Roslyn cannot see. -->
+    <NoWarn>$(NoWarn);CS0649</NoWarn>
+    <RootNamespace>WeldStudio</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="UnityStubs.cs" />
+    <Compile Include="../../../Assets/WeldStudio/Runtime/Core/**/*.cs" />
+    <Compile Include="../../../Assets/WeldStudio/Runtime/Persistence/**/*.cs" />
+    <Compile Include="../../../Assets/WeldStudio/Tests/EditMode/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+
+</Project>
