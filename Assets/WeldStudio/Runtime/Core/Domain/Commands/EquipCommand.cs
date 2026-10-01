@@ -27,7 +27,7 @@ namespace WeldStudio.Core
             if (change.IsEmpty) return;
 
             model.Unequip(definition.Id);
-            foreach (EquippedItem item in change.Removed) model.Equip(item.Definition, item.VariantId);
+            foreach (EquippedItem item in change.Removed) model.Equip(item.Definition, item.VariantId, item.Appearance);
         }
 
         public bool TryMergeWith(ICommand next) => false;

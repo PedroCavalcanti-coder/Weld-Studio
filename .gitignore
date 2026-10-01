@@ -129,3 +129,6 @@ desktop.ini
 /Tools/**/[Bb]in/
 /Tools/**/[Oo]bj/
 /Tools/**/TestResults/
+
+# Local-only test content (third-party files that cannot be redistributed, see docs/07-personalizacao.md §7.0)
+/SourceAssets/_local/

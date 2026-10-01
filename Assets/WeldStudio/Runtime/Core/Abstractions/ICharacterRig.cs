@@ -33,5 +33,19 @@ namespace WeldStudio.Core
 
         /// <summary>Body regions currently hidden by worn items.</summary>
         void SetHiddenRegions(BodyRegion regions);
+
+        /// <summary>
+        /// Sets the contribution of <paramref name="sourceId"/> (usually a modifier id) to a bone's rest pose.
+        /// Contributions from different sources are combined (<see cref="BoneAdjustmentStack"/>) and applied on
+        /// top of the rest pose; worn items follow because they share the skeleton.
+        /// </summary>
+        /// <remarks>
+        /// Implementations compensate non-uniform scale on child bones, so stretching an upper arm does not
+        /// shear the forearm and hand.
+        /// </remarks>
+        void SetBoneAdjustment(string boneName, string sourceId, BoneAdjustment adjustment);
+
+        /// <summary>Removes every bone contribution of <paramref name="sourceId"/>.</summary>
+        void RemoveBoneAdjustments(string sourceId);
     }
 }

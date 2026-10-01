@@ -5,7 +5,8 @@ namespace WeldStudio.Core
 {
     /// <summary>
     /// Serializable snapshot of a character. Holds ids and values only (never Unity objects), so it can be
-    /// serialized off the main thread and shared between machines.
+    /// serialized off the main thread and shared between machines. Binary data (painted pixels) travels next
+    /// to it as attachments of a <see cref="PresetPackage"/>.
     /// </summary>
     [Serializable]
     public sealed class CharacterPreset
@@ -24,5 +25,8 @@ namespace WeldStudio.Core
 
         /// <summary>Explicitly set modifier values by modifier id. Absent ids use their default value.</summary>
         public Dictionary<string, float> Modifiers { get; set; } = new Dictionary<string, float>(StringComparer.Ordinal);
+
+        /// <summary>Paint layers, bottom to top.</summary>
+        public List<PaintLayerEntry> PaintLayers { get; set; } = new List<PaintLayerEntry>();
     }
 }

@@ -2,7 +2,7 @@ using System;
 
 namespace WeldStudio.Core
 {
-    /// <summary>Removes a worn item; undo wears it again with the same variant.</summary>
+    /// <summary>Removes a worn item; undo wears it again with the same variant and customisation.</summary>
     public sealed class UnequipCommand : ICommand
     {
         private readonly CharacterModel model;
@@ -26,7 +26,7 @@ namespace WeldStudio.Core
 
         public void Undo()
         {
-            if (removed != null) model.Equip(removed.Definition, removed.VariantId);
+            if (removed != null) model.Equip(removed.Definition, removed.VariantId, removed.Appearance);
         }
 
         public bool TryMergeWith(ICommand next) => false;

@@ -20,7 +20,14 @@ namespace WeldStudio.Core
         /// <summary>Unknown variants; the item's default variant was used instead.</summary>
         public List<EquipmentEntry> MissingVariants { get; } = new List<EquipmentEntry>();
 
+        /// <summary>Colours that were not valid hex values, as <c>itemId/zoneId</c>; the zone default was used.</summary>
+        public List<string> InvalidColors { get; } = new List<string>();
+
+        /// <summary>Paint layers dropped because their entry was incomplete (no id or target).</summary>
+        public List<string> InvalidPaintLayers { get; } = new List<string>();
+
         public bool HasIssues =>
-            RigMismatch || MissingItemIds.Count > 0 || IncompatibleItemIds.Count > 0 || MissingVariants.Count > 0;
+            RigMismatch || MissingItemIds.Count > 0 || IncompatibleItemIds.Count > 0 || MissingVariants.Count > 0 ||
+            InvalidColors.Count > 0 || InvalidPaintLayers.Count > 0;
     }
 }

@@ -37,6 +37,8 @@ jobs:
           dotnet-version: "8.0.x"
       - name: Run Core and Persistence tests against Unity stubs
         run: dotnet test Tools/ci/DomainTests --logger "console;verbosity=normal"
+      - name: Compile editor-only code paths (UNITY_EDITOR)
+        run: dotnet build Tools/ci/DomainTests -p:DefineConstants=UNITY_EDITOR -o "${RUNNER_TEMP}/editor-build"
 
   unity-tests:
     name: Unity EditMode/PlayMode tests

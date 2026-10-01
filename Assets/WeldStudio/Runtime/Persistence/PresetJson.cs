@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using WeldStudio.Core;
 
 namespace WeldStudio.Persistence
 {
-    /// <summary>JSON format of presets: camelCase properties, modifier ids kept verbatim.</summary>
+    /// <summary>JSON format of presets: camelCase properties, ids kept verbatim, enums written by name.</summary>
     public static class PresetJson
     {
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
@@ -21,6 +22,7 @@ namespace WeldStudio.Persistence
             MissingMemberHandling = MissingMemberHandling.Ignore,
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             FloatParseHandling = FloatParseHandling.Double,
+            Converters = { new StringEnumConverter() },
         };
 
         public static string Serialize(CharacterPreset preset)
@@ -56,21 +58,35 @@ namespace WeldStudio.Persistence
             var equipment = new List<EquipmentEntry>();
             foreach (EquipmentEntry entry in preset.Equipment ?? new List<EquipmentEntry>())
             {
-                if (!string.IsNullOrWhiteSpace(entry?.ItemId)) equipment.Add(entry);
+                if (string.IsNullOrWhiteSpace(entry?.ItemId)) continue;
+                entry.Colors = CleanKeys(entry.Colors, value => value != null);
+                entry.Parameters = CleanKeys(entry.Parameters, IsFinite);
+                equipment.Add(entry);
             }
             preset.Equipment = equipment;
 
-            var modifiers = new Dictionary<string, float>(StringComparer.Ordinal);
-            if (preset.Modifiers != null)
+            var paintLayers = new List<PaintLayerEntry>();
+            foreach (PaintLayerEntry layer in preset.PaintLayers ?? new List<PaintLayerEntry>())
             {
-                foreach (KeyValuePair<string, float> pair in preset.Modifiers)
-                {
-                    if (!string.IsNullOrEmpty(pair.Key) && !float.IsNaN(pair.Value) && !float.IsInfinity(pair.Value))
-                        modifiers[pair.Key] = pair.Value;
-                }
+                if (layer != null) paintLayers.Add(layer);
             }
-            preset.Modifiers = modifiers;
+            preset.PaintLayers = paintLayers;
+
+            preset.Modifiers = CleanKeys(preset.Modifiers, IsFinite);
             return preset;
         }
+
+        private static Dictionary<string, T> CleanKeys<T>(Dictionary<string, T> source, Func<T, bool> keep)
+        {
+            var clean = new Dictionary<string, T>(StringComparer.Ordinal);
+            if (source == null) return clean;
+            foreach (KeyValuePair<string, T> pair in source)
+            {
+                if (!string.IsNullOrEmpty(pair.Key) && keep(pair.Value)) clean[pair.Key] = pair.Value;
+            }
+            return clean;
+        }
+
+        private static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
     }
 }
