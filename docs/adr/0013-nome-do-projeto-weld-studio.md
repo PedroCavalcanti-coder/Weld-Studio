@@ -2,6 +2,7 @@
 
 - **Status:** Aceita
 - **Data:** 2026-10-01
+- **Nota:** a extensão dos presets passou a ser `.weld` ([ADR-0015](0015-preset-salvo-como-pacote-weld-zip.md)).
 
 ## Contexto
 

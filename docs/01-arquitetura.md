@@ -152,7 +152,7 @@ Regras:
 | `WeldStudio.Physics` | `WeldStudio.Physics` | Backends Unity Cloth e spring bones, geração de colisores | Core |
 | `WeldStudio.Animation` | `WeldStudio.Animation` | Animator (idle), IK com Animation Rigging | Core, Animation Rigging |
 | `WeldStudio.Rendering` | `WeldStudio.Rendering` | Composição da máscara do corpo, propriedades de shader | Core, URP |
-| `WeldStudio.Persistence` | `WeldStudio.Persistence` | `JsonPresetRepository`, migrações de schema | Core, Newtonsoft JSON |
+| `WeldStudio.Persistence` | `WeldStudio.Persistence` | `PackagePresetRepository` (`.weld`), `PresetJson`, migrações de schema | Core, Newtonsoft JSON |
 | `WeldStudio.UI` | `WeldStudio.UI` | Presenters, Views (UXML/USS) | Core |
 | `WeldStudio.App` | `WeldStudio.App` | `LifetimeScope`s, bootstrap | Todos + VContainer |
 | `WeldStudio.Editor` | `WeldStudio.Editor` | Validadores, importadores, ferramentas de conteúdo | Todos (somente Editor) |
@@ -247,8 +247,8 @@ memória; malhas e texturas continuam descarregadas. Valida cada entrada (`Colle
 as quebradas com aviso, indexa por `Id` e oferece consultas para a UI (por tipo, slot, tag e texto). Content packs
 e mods registram catálogos adicionais aqui.
 
-### 7. `IPresetRepository` → `JsonPresetRepository` (`WeldStudio.Persistence`)
-Salva e carrega `CharacterPreset` em JSON de forma assíncrona: serialização em thread de background
+### 7. `IPresetRepository` → `PackagePresetRepository` (`WeldStudio.Persistence`)
+Salva e carrega o preset num arquivo `.weld` (zip com `preset.json` e os PNGs das pinturas, [ADR-0015](adr/0015-preset-salvo-como-pacote-weld-zip.md)) de forma assíncrona: serialização em thread de background
 (`Task.Run`), I/O assíncrono, gravação atômica (arquivo temporário + troca), campo
 `schemaVersion` com migrações. O preset guarda só IDs e valores, nunca referências a objetos Unity: é seguro fora
 da main thread e portátil entre máquinas. IDs desconhecidos (mod ausente) são reportados, não quebram o
@@ -264,6 +264,9 @@ carregamento. Formato em [02-contrato-de-dados.md](02-contrato-de-dados.md#28-fo
 | `IEquipableDefinition` | Visão de dados de qualquer equipável (ID, rig, slots, camada, variantes). É o que o `CharacterModel` enxerga; `ClothingItemData` a implementa. |
 | `IEquipableFactory` | Cria o `IEquipable` certo para cada tipo de definição; registrada no container. |
 | `AssetLease<T>` | Asset carregado + obrigação de liberá-lo: `Dispose()` libera exatamente uma vez. |
+| `IPaintCanvas` / `IPaintStroke` | Motor de pintura no modelo ([07 §7.2](07-personalizacao.md#72-pintura-direto-no-modelo)). |
+| `IAnimationPreview` | Prévia de animações de exemplo ([07 §7.3](07-personalizacao.md#73-animações-de-exemplo)). |
+| `BoneAdjustmentStack` | Combina ajustes de vários sliders no mesmo osso ([07 §7.1](07-personalizacao.md#71-edição-do-corpo-por-partes)). |
 | `SkinnedEquipable` | Implementação padrão de `IEquipable` para roupas e cabelos. |
 | `ModifierDefinition` (SO) | Definição em dados de um slider (blendshape alvo, faixa, curva, categoria). |
 | Presenters/Views | `CatalogPresenter`, `ModifierPanelPresenter`, `VariantPickerPresenter`, `PresetPresenter`, etc. |

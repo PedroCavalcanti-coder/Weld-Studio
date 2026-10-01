@@ -43,7 +43,7 @@ Newtonsoft: abrir o repositório antes de instalar esses pacotes dá erros de co
 5. Dentro da Unity:
    1. mova `Assets/Settings` para `Assets/WeldStudio/Settings` (movendo pelo Editor, os GUIDs são preservados);
    2. crie `Assets/WeldStudio/Scenes/Boot.unity`;
-   3. em *Window → General → Test Runner → EditMode*, rode os testes: os 39 devem passar.
+   3. em *Window → General → Test Runner → EditMode*, rode os testes: os 72 devem passar.
 6. Confira em *Project Settings*:
    - **Editor → Asset Serialization: Force Text**
    - **Version Control → Mode: Visible Meta Files**

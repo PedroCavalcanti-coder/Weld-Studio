@@ -53,14 +53,30 @@ Objetivo: toda a lógica do personagem funcionando e testada, sem cena.
       preset com diff e preservação de itens não resolvidos
 - [x] `ICommand` + `CommandHistory` (undo/redo com coalescência) e comandos `Equip`, `Unequip`, `SetVariant`,
       `SetModifier`, `ApplyPreset`
-- [x] `CharacterPreset` (DTO) + `JsonPresetRepository` (assíncrono, gravação atômica, `schemaVersion`) +
-      `PresetMigrator`
-- [x] 39 testes EditMode cobrindo o domínio e a persistência, passando em .NET 8 com C# 9
+- [x] `CharacterPreset` (DTO) + `PackagePresetRepository` (`.weld`: zip com JSON + PNGs, assíncrono, gravação
+      atômica, leitura defensiva) + `PresetMigrator`
+- [x] Testes EditMode cobrindo o domínio e a persistência, passando em .NET 8 com C# 9
 - [ ] Rodar os mesmos testes dentro da Unity (depende da Fase 0)
 - [ ] Arquivos-exemplo de preset versionados por schema (entram junto com a primeira migração, v1 → v2)
 
 **Pronto quando:** equipar, desequipar, desfazer, salvar e carregar funcionam nos testes, sem nenhuma cena.
 ✅ Cumprido em .NET; falta a confirmação dentro da Unity.
+
+## Fase 1b – Personalização (domínio)
+
+Objetivo: tudo o que o usuário personaliza já modelado, testado e salvo em preset, antes de existir cena
+([07-personalizacao.md](07-personalizacao.md)).
+
+- [x] Cores por parte de roupa e de cabelo (`ColorZone`, `ItemAppearance`, `ColorRgba`, `SetItemColorCommand`)
+- [x] Parâmetros de itens: comprimento, volume, degradê e mechas do cabelo (`ItemParameter`, `SetItemParameterCommand`)
+- [x] `EquipableItemData` como base comum; `HairItemData` com as opções padrão de cabelo
+- [x] Edição do corpo por partes: `BodyPartData`, `BlendShapeModifierDefinition`, `BoneTransformModifierDefinition`
+      (comprimento, espessura, escala, posição), `BoneAdjustmentStack`, simetria em `SetModifierCommand`
+- [x] Camadas de pintura (`PaintLayer` + comandos) e contratos do motor (`IPaintCanvas`, `IPaintStroke`, `BrushSettings`)
+- [x] Prévia de animações: `AnimationClipData` + contrato `IAnimationPreview`
+- [x] Preset `.weld` com cores, parâmetros e camadas de pintura (PNGs anexos)
+- [x] 72 testes EditMode no total, compilação também com `UNITY_EDITOR` no CI
+- [ ] Avaliar os FBX encontrados (corpos, cabelos, roupas) com o checklist de [07 §7.0](07-personalizacao.md#70-avaliando-corpos-cabelos-e-roupas-encontrados-fbx)
 
 ## Fase 2 – Conteúdo e Addressables
 
@@ -91,7 +107,13 @@ Objetivo: o coração do Fuse funcionando, com roupas presas ao esqueleto em tem
 - [ ] `SkinnedEquipable` + `CharacterAssembler` (com tokens de geração contra condições de corrida)
 - [ ] Oclusão do corpo: regiões gravadas na malha + shader de pele mínimo que descarta regiões + composição de
       máscaras
-- [ ] `HairItemData` + 1 cabelo de teste; 3 roupas de teste (camiseta, calça, vestido)
+- [ ] 1 cabelo de teste (hair cards com `UV.y` raiz→ponta e `UV2.x` por card); 3 roupas de teste (camiseta, calça,
+      vestido) com máscara de zonas
+- [ ] Aplicação da aparência na cena: `MaterialPropertyBlock` por slot (zonas de cor, parâmetros de shader) e
+      blendshapes dos parâmetros
+- [ ] Ajustes de ossos no `CharacterRig` (`BoneAdjustmentStack` + compensação de escala nos filhos), validados no
+      esqueleto real
+- [ ] Shaders mínimos: roupa com `_ZoneMask` e `_ZoneColor0..3`; cabelo com raiz/pontas/mechas e `_Length`
 - [ ] Composition root (`RootLifetimeScope`, `CharacterLifetimeScope`) + `AppBootstrapper`
 - [ ] UI de debug provisória (lista de itens, sem design)
 
@@ -106,8 +128,13 @@ Objetivo: o fluxo completo do usuário.
       Exportar), painel de propriedades
 - [ ] Catálogo: `ListView` virtualizada (linhas com N itens), ícones carregados sob demanda, busca, filtros por
       `CatalogCategoryData`
-- [ ] Painel de modificadores: sliders gerados a partir de `ModifierDefinition`, agrupados, com reset
-- [ ] Seletor de variantes (amostras de cor)
+- [ ] Seleção de partes do corpo: clique no modelo (picking na GPU por região), lista, destaque e enquadramento
+- [ ] Painel da parte selecionada: sliders gerados a partir de `ModifierDefinition`, agrupados, com reset e
+      simetria; gizmo para arrastar (mover/esticar/engrossar) no próprio modelo
+- [ ] Seletor de variantes e seletor de cor por zona (paleta, conta-gotas, cores salvas)
+- [ ] Painel do cabelo: cores de raiz, pontas e mechas; comprimento, volume, degradê
+- [ ] Pintura: motor `IPaintCanvas` (UV + pincel 3D, dilatação, undo por blocos), painel de camadas, pincel,
+      borracha, simetria
 - [ ] Salvar, carregar e "salvar como"; lista de presets recentes
 - [ ] Undo/redo com atalhos (Input System)
 - [ ] Câmera orbital (girar, zoom, enquadrar rosto ou corpo)
@@ -133,6 +160,9 @@ Objetivo: o fluxo completo do usuário.
   - [ ] olhar para a câmera (`MultiAimConstraint` em cabeça e pescoço, com limites)
   - [ ] alinhamento dos pés ao chão (`TwoBoneIKConstraint` + raycast), considerando altura de salto do calçado
 - [ ] Liga/desliga de IK e animação na UI
+- [ ] `IAnimationPreview` com `PlayableGraph`: painel por categoria, play/pausa, velocidade, linha do tempo, mesa
+      giratória
+- [ ] Animações de exemplo com licença livre, incluindo a categoria Amplitude de Movimento
 
 **Pronto quando:** o personagem segue a câmera com naturalidade e os pés não flutuam nem afundam com nenhum
 calçado de teste. → **v0.5**

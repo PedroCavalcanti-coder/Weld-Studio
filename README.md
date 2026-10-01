@@ -7,7 +7,8 @@ sliders e veja tudo reagir com física, em tempo real. Feito em Unity 6.3 LTS (U
 [MakeHuman](http://www.makehumancommunity.org/) (CC0).
 
 > **Status: fundação pronta (Fases 0 e 1).** Arquitetura, contratos, domínio do personagem (equipar, undo/redo,
-> presets JSON) e CI estão no repositório, com 39 testes passando. Próximo passo: criar o projeto Unity
+> presets `.weld`), personalização (cores de roupas e cabelos, pintura em camadas, edição do corpo por partes) e
+> CI estão no repositório, com 72 testes passando. Próximo passo: criar o projeto Unity
 > ([setup](docs/06-setup.md#63-criar-o-projeto-unity-uma-única-vez)) e iniciar a Fase 2 (Addressables). Veja o
 > [roadmap](docs/04-roadmap.md).
 
@@ -17,13 +18,18 @@ sliders e veja tudo reagir com física, em tempo real. Feito em Unity 6.3 LTS (U
 
 - **Modularidade total.** Corpo, roupas e cabelos compartilham o mesmo esqueleto Humanoid. As peças se prendem ao
   corpo em tempo real por remapeamento de ossos do `SkinnedMeshRenderer`.
-- **Corpo e rosto paramétricos.** Sliders de blendshapes para forma do corpo (peso, idade, proporções) e
-  expressões faciais. As roupas acompanham as mudanças do corpo.
+- **Corpo editável por partes.** Selecione uma parte (clicando no modelo ou numa lista) e mova, estique, engrosse
+  ou diminua, com simetria. Sliders de blendshapes para forma do corpo e expressões faciais. As roupas acompanham.
+- **Pintura no modelo.** Pincel e borracha direto no corpo ou nas roupas, em camadas (tatuagem, maquiagem, sujeira)
+  com opacidade e modos de mistura.
+- **Cabelo e roupas personalizáveis.** Cabelo com cor de raiz, pontas e mechas, comprimento e volume; roupas com
+  cor por parte (gola, punhos, sola...) e variantes de textura.
 - **Física.** Saias e capas com simulação de tecido que não atravessa o corpo; mechas de cabelo e partes do corpo
   com inércia. Unity Cloth e spring bones próprios por padrão, Magica Cloth 2 como módulo opcional.
-- **Animação e IK.** Idle com Animator; olhar para a câmera e alinhamento dos pés com Animation Rigging.
+- **Animação e IK.** Idle com Animator; olhar para a câmera e alinhamento dos pés com Animation Rigging; animações
+  de exemplo (incluindo amplitude de movimento) para testar deformações, com pausa e linha do tempo.
 - **Renderização dedicada.** Pele com subsurface scattering e cabelo em hair cards com brilho anisotrópico, no URP.
-- **Presets.** Salve e carregue personagens em JSON, com undo/redo em toda edição.
+- **Presets.** Salve e carregue personagens num único arquivo `.weld` (JSON + pinturas), com undo/redo em toda edição.
 - **Extensível.** Roupas e cabelos novos entram como dados, sem código. Novos comportamentos entram por interfaces
   (`IEquipable`, `ICharacterModifier`, `IPhysicsBackend`) e módulos.
 - **Export** (v1.0). Personagem montado em glTF/GLB para usar em outras engines e ferramentas.
@@ -39,7 +45,7 @@ sliders e veja tudo reagir com física, em tempo real. Feito em Unity 6.3 LTS (U
 | Conteúdo | Addressables (a pasta `Resources/` não é usada) + ScriptableObjects |
 | Animação | Animator + Animation Rigging |
 | Física | Unity Cloth, spring bones próprios, Magica Cloth 2 (opcional) |
-| Dados | JSON (Newtonsoft) assíncrono e versionado |
+| Dados | Pacote `.weld` (zip com JSON + PNGs), assíncrono e versionado |
 | Versionamento | Git + Git LFS (obrigatório) |
 
 ## Arquitetura em resumo
@@ -64,6 +70,7 @@ A interface e o código 3D não se conhecem: os dois falam só com o modelo do p
 | [Roadmap](docs/04-roadmap.md) | Fases, entregas e critérios de "pronto" |
 | [Decisões e riscos](docs/05-decisoes-e-riscos.md) | Por que cada escolha foi feita, riscos e questões em aberto |
 | [Setup](docs/06-setup.md) | Requisitos, clone com LFS, criação do projeto, pacotes, CI |
+| [Personalização](docs/07-personalizacao.md) | Edição do corpo, pintura, cabelo, cores de roupas, animações; avaliação de FBX encontrados |
 | [ADRs](docs/adr/README.md) | O registro de cada decisão de arquitetura |
 
 ## Roadmap resumido

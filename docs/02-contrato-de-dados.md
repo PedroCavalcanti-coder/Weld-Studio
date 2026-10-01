@@ -20,23 +20,28 @@
 
 ```
 ScriptableObject
-├── CatalogItemData (abstract)            ✅ escrito: identidade, apresentação, atribuição
-│   ├── ClothingItemData                  ✅ escrito: roupa
-│   ├── HairItemData                      ⏳ Fase 3: cabelo (hair cards + cadeias de ossos)
-│   └── AccessoryItemData                 ⏳ Fase 5+: acessório rígido preso a um osso
-├── PhysicsProfileData (abstract)         ✅ escrito: base agnóstica de motor
+├── CatalogItemData (abstract)            ✅ identidade, apresentação, atribuição
+│   ├── EquipableItemData (abstract)      ✅ montagem, variantes, zonas de cor, parâmetros, física
+│   │   ├── ClothingItemData              ✅ roupa (+ oclusão do corpo)
+│   │   ├── HairItemData                  ✅ cabelo (raiz/pontas/mechas, comprimento, volume...)
+│   │   └── AccessoryItemData             ⏳ Fase 5: acessório rígido preso a um osso
+│   └── AnimationClipData                 ✅ animação de exemplo para a prévia
+├── ModifierDefinition (abstract)         ✅ slider definido em dados (implementa ICharacterModifier)
+│   ├── BlendShapeModifierDefinition      ✅ forma: blendshape positivo/negativo
+│   ├── BoneTransformModifierDefinition   ✅ proporção: comprimento, espessura, escala, posição de ossos
+│   └── MacroModifierDefinition           ⏳ Fase 5: um slider → vários blendshapes (idade, peso)
+├── BodyPartData                          ✅ parte do corpo selecionável (regiões, foco, sliders, espelho)
+├── PhysicsProfileData (abstract)         ✅ base agnóstica de motor
 │   ├── UnityClothProfile                 ⏳ Fase 7
 │   ├── SpringBoneProfile                 ⏳ Fase 7
 │   └── MagicaClothProfile                ⏳ Fase 7 (módulo opcional)
-├── ModifierDefinition (abstract)         ⏳ Fase 5: definição de slider
-│   ├── BlendShapeModifierDefinition
-│   └── MacroModifierDefinition
 ├── BodyDefinition                        ⏳ Fase 3: corpo base (prefab, rig, mapa de regiões)
 ├── CatalogCategoryData                   ⏳ Fase 4: aba/filtro da UI
 └── ContentPackManifest                   ⏳ Fase 9: id, versão, autor, licença, dependências do pack
 ```
 
-Tipos serializáveis (não-SO): `MaterialVariant` ✅.
+Tipos serializáveis (não-SO): `MaterialVariant`, `ColorZone`, `ItemParameter` ✅. O uso de cada um na interface está
+em [07-personalizacao.md](07-personalizacao.md).
 
 **Categorias filtram itens, itens não conhecem categorias.** Um `CatalogCategoryData` ("Camisetas", "Sci-Fi")
 descreve um filtro (tipo de item, slots, tags). Assim a definição do item não carrega preocupações de UI, e uma
@@ -61,10 +66,12 @@ Arquivo: `Assets/WeldStudio/Runtime/Core/Data/CatalogItemData.cs` · Namespace: 
 Membros públicos: propriedades somente-leitura para cada campo, `HasTag(string)`,
 `CollectValidationErrors(ICollection<string>)` (virtual) e a constante `CatalogLabel = "weld.catalog"`.
 
-## 2.4 `ClothingItemData`
+## 2.4 `EquipableItemData`, `ClothingItemData` e `HairItemData`
 
-Arquivo: `Assets/WeldStudio/Runtime/Core/Data/ClothingItemData.cs` · Menu: *Create → Weld Studio → Catalog →
-Clothing Item* · Implementa `IEquipableDefinition`, a visão que o `CharacterModel` usa para qualquer equipável.
+Arquivos: `Assets/WeldStudio/Runtime/Core/Data/` · Menus: *Create → Weld Studio → Catalog → Clothing Item / Hair*.
+`EquipableItemData` é a base comum e implementa `IEquipableDefinition`, a visão que o `CharacterModel` usa para
+qualquer equipável. `ClothingItemData` acrescenta a oclusão do corpo; `HairItemData` já nasce com slot `Hair` e as
+opções padrão de cabelo ([07 §7.4](07-personalizacao.md#74-cabelo-escolha-cores-comprimento-e-volume)).
 
 | Grupo | Campo | Tipo | Uso |
 |-------|-------|------|-----|
@@ -73,17 +80,19 @@ Clothing Item* · Implementa `IEquipableDefinition`, a visão que o `CharacterMo
 | | `slots` | `EquipmentSlot` (flags) | Slots ocupados. Pelo menos um. |
 | | `layer` | `EquipmentLayer` | Camada (da pele para fora). |
 | | `conformToBodyShape` | `bool` | Copia os pesos dos blendshapes do corpo para blendshapes de mesmo nome na peça (segue peso, músculo, proporções). Padrão `true`. |
-| Oclusão | `hiddenBodyRegions` | `BodyRegion` (flags) | Regiões do corpo escondidas enquanto a peça é usada. |
+| Oclusão (só roupa) | `hiddenBodyRegions` | `BodyRegion` (flags) | Regiões do corpo escondidas enquanto a peça é usada. |
 | | `bodyMask` | `AssetReferenceTexture2D` | Máscara precisa opcional no espaço UV do corpo (branco = oculto), combinada com as regiões. |
-| Aparência | `materialVariants` | `MaterialVariant[]` | Cores/estilos selecionáveis; o primeiro é o padrão. Vazio = materiais do próprio prefab. |
+| Aparência | `materialVariants` | `MaterialVariant[]` | Conjuntos de textura selecionáveis; o primeiro é o padrão. Vazio = materiais do próprio prefab. |
+| | `colorZones` | `ColorZone[]` | Partes recolorizáveis: ID, nome, cor padrão, propriedade de shader, slot de material. |
+| | `parameters` | `ItemParameter[]` | Sliders da peça: ID, faixa, padrão, alvo (float de shader ou blendshape). |
 | Física | `physicsProfiles` | `PhysicsProfileData[]` | Perfis por ordem de preferência. Vazio = peça estática. |
 
 Membros públicos além das propriedades:
 
 | Membro | Descrição |
 |--------|-----------|
-| `ConflictsWith(ClothingItemData)` | `true` quando as duas peças dividem pelo menos um slot **na mesma camada**. |
-| `TryGetVariant(string, out MaterialVariant)` | Busca uma variante pelo ID (usado ao aplicar presets). |
+| `ConflictsWith(EquipableItemData)` | `true` quando as duas peças dividem pelo menos um slot **na mesma camada**. |
+| `TryGetVariant` / `TryGetColorZone` / `TryGetParameter` | Busca por ID (usado pela UI e ao aplicar a aparência na cena). |
 | `DefaultVariant` / `DefaultVariantId` | Primeira variante (ou seu ID), ou `null` quando valem os materiais do prefab. |
 | `HasVariant(string)` | Se a variante existe (parte de `IEquipableDefinition`). |
 | `HasBodyMask` | Se há máscara de textura atribuída. |
@@ -155,7 +164,7 @@ editado, um `AssetPostprocessor` (Fase 2) vai reforçar a regra no momento do im
 ## 2.8 Formato do preset JSON
 
 **Implementado (schema v1)**: `CharacterPreset` (`Core/Domain/Presets`), `PresetJson`, `PresetMigrator` e
-`JsonPresetRepository` (`Runtime/Persistence`). Exemplo:
+`PackagePresetRepository` (`Runtime/Persistence`). Exemplo do `preset.json` dentro do `.weld`:
 
 ```json
 {
@@ -167,13 +176,36 @@ editado, um `AssetPostprocessor` (Fase 2) vai reforçar a regra no momento do im
     "createdAt": "2026-10-01T12:00:00Z"
   },
   "equipment": [
-    { "itemId": "3f2a9c0d8e7b4a6f9c1d2e3f4a5b6c7d", "variantId": "navy" },
-    { "itemId": "9b8a7c6d5e4f40312a1b2c3d4e5f6a7b", "variantId": null }
+    {
+      "itemId": "3f2a9c0d8e7b4a6f9c1d2e3f4a5b6c7d",
+      "variantId": "denim",
+      "colors": { "primary": "#1F3A5F", "collar": "#FFFFFF" },
+      "parameters": {}
+    },
+    {
+      "itemId": "9b8a7c6d5e4f40312a1b2c3d4e5f6a7b",
+      "variantId": null,
+      "colors": { "root": "#2E1C12", "tip": "#E6C28A", "streak": "#C0943880" },
+      "parameters": { "length": 0.6, "streakAmount": 0.25 }
+    }
   ],
   "modifiers": {
     "body.weight": 0.35,
+    "body.upperArm.l.length": 0.1,
+    "body.upperArm.r.length": 0.1,
     "face.mouthSmileLeft": 0.8
-  }
+  },
+  "paintLayers": [
+    {
+      "id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+      "targetId": "body",
+      "name": "Tatuagem",
+      "opacity": 0.9,
+      "blendMode": "Multiply",
+      "visible": true,
+      "image": "paint/a1b2c3d4e5f60718293a4b5c6d7e8f90.png"
+    }
+  ]
 }
 ```
 
@@ -186,12 +218,17 @@ Regras:
 - **IDs desconhecidos** (mod não instalado) são reportados ao usuário **e preservados** ao salvar de novo. Abrir
   e salvar um preset não pode apagar silenciosamente o que pertence a um pack ausente.
 - Variante desconhecida → variante padrão, com aviso.
+- Cor inválida (não é `#RRGGBB`/`#RRGGBBAA`) → cor padrão da zona, com aviso. Zonas e parâmetros desconhecidos →
+  preservados, como os modificadores.
+- Camada de pintura sem `id` ou `targetId`, ou com `id` repetido → descartada, com aviso. Modos de mistura são
+  gravados pelo nome.
 - Modificador desconhecido → preservado. Valor fora da faixa → limitado à faixa no momento de aplicar (o
   `ICharacterModifier` conhece a faixa; o modelo guarda o valor como veio). Modificador ausente → valor padrão.
   Valores não finitos (NaN, infinito) são descartados.
 - Campos desconhecidos no JSON são ignorados; entradas de equipamento sem `itemId` são descartadas.
 - Gravação atômica: escreve em `<arquivo>.tmp` e troca pelo definitivo.
-- Extensão: `.weld.json`, numa pasta de presets do usuário (`Application.persistentDataPath/Presets` por padrão,
+- Arquivo: `.weld`, um zip com `preset.json` e `attachments/paint/<id da camada>.png`
+  ([ADR-0015](adr/0015-preset-salvo-como-pacote-weld-zip.md)), numa pasta de presets do usuário (`Application.persistentDataPath/Presets` por padrão,
   com opção de "Salvar como…" em qualquer lugar).
 
 ## 2.9 Convenções de Addressables
@@ -224,13 +261,16 @@ configurar Addressables à mão.
 
 | Pasta (`Assets/WeldStudio/`) | Conteúdo |
 |------------------------------|----------|
-| `Runtime/Core/Data/` | `CatalogItemData`, `ClothingItemData`, `MaterialVariant`, `PhysicsProfileData` |
+| `Runtime/Core/Data/` | `CatalogItemData`, `EquipableItemData`, `ClothingItemData`, `HairItemData`, `MaterialVariant`, `ColorZone`, `ItemParameter`, `PhysicsProfileData` |
+| `Runtime/Core/Data/Body/` | `ModifierDefinition`, `BlendShapeModifierDefinition`, `BoneTransformModifierDefinition`, `BodyPartData` |
+| `Runtime/Core/Data/Animation/` | `AnimationClipData`, `AnimationCategory` |
+| `Runtime/Core/Domain/Appearance/`, `Paint/`, `Body/` | `ColorRgba`, `ItemAppearance`, `PaintLayer`, `PaintBlendMode`, `BoneAdjustment`, `BoneAdjustmentStack` |
 | `Runtime/Core/Domain/` | `EquipmentSlot`, `EquipmentLayer`, `BodyRegion`, `EquipmentRules`, `EquippedItem`, `EquipmentChange`, `CharacterModel` |
-| `Runtime/Core/Domain/Presets/` | `CharacterPreset`, `EquipmentEntry`, `PresetMetadata`, `PresetApplyReport`, `PresetFormatException` |
-| `Runtime/Core/Domain/Commands/` | `ICommand`, `CommandHistory`, `EquipCommand`, `UnequipCommand`, `SetVariantCommand`, `SetModifierCommand`, `ApplyPresetCommand` |
+| `Runtime/Core/Domain/Presets/` | `CharacterPreset`, `EquipmentEntry`, `PaintLayerEntry`, `PresetMetadata`, `PresetPackage`, `PresetApplyReport`, `PresetFormatException` |
+| `Runtime/Core/Domain/Commands/` | `ICommand`, `CommandHistory`, `EquipCommand`, `UnequipCommand`, `SetVariantCommand`, `SetModifierCommand` (com simetria), `SetItemColorCommand`, `SetItemParameterCommand`, comandos de camadas de pintura, `ApplyPresetCommand` |
 | `Runtime/Core/Abstractions/` | Interfaces da fundação ([01 §1.5](01-arquitetura.md#15-classes-e-interfaces-fundamentais)) |
-| `Runtime/Persistence/` | `PresetJson`, `PresetMigrator`, `JsonPresetRepository` |
-| `Tests/EditMode/` | 39 testes NUnit de domínio e persistência |
+| `Runtime/Persistence/` | `PresetJson`, `PresetMigrator`, `PackagePresetRepository` |
+| `Tests/EditMode/` | 72 testes NUnit de domínio, personalização, edição do corpo e persistência |
 
 Tudo compila com C# 9 e warnings tratados como erro, e os testes passam em .NET 8 contra stubs da API da Unity
 ([ADR-0014](adr/0014-testes-de-dominio-tambem-rodam-em-net-puro-no-ci.md)). Ainda falta abrir o projeto numa Unity

@@ -19,8 +19,13 @@ tabela é o resumo.
 | D10 | Esqueleto *Game engine* do MakeHuman como base | Compatível com Humanoid, mais leve que o *default* | Esqueleto *default* (ossos faciais desnecessários com blendshapes) |
 | D11 | Terceiros via UPM; assets pagos nunca commitados | Licenças e tamanho do repo | Copiar plugins para `Assets/` |
 | D12 | Código em inglês; docs de planejamento em português | Alcance internacional sem perder clareza agora | Tudo em português |
-| D13 | Nome do projeto: **Weld Studio** (namespaces `WeldStudio`, extensão `.weld.json`, labels `weld.`) | Mesmo nome do repositório | Nome provisório |
+| D13 | Nome do projeto: **Weld Studio** (namespaces `WeldStudio`, extensão `.weld`, labels `weld.`) | Mesmo nome do repositório | Nome provisório |
 | D14 | Testes de domínio também em .NET puro no CI, contra stubs da Unity | Feedback rápido e sem licença Unity | Só testes dentro da Unity |
+| D15 | Preset como pacote `.weld` (zip: JSON + PNGs), leitura defensiva | Pinturas viajam no mesmo arquivo; arquivos de terceiros são entrada não confiável | JSON com base64; arquivos soltos |
+| D16 | Zonas de cor e parâmetros de itens definidos em dados, aplicados via MaterialPropertyBlock | Conteúdo novo sem código, sem duplicar materiais | Código por item; material por cor |
+| D17 | Corpo editado por blendshapes (forma) e ossos (proporção), combinados por fonte | Cobre mover, esticar, engrossar e diminuir sem conflito entre sliders | Só blendshapes; só ossos |
+| D18 | Pintura no espaço UV com pincel medido em 3D e undo por blocos | Sem cortes nas costuras, memória de undo pequena | Pintura projetada em textura de tela; snapshot inteiro por traço |
+| D19 | Prévia de animações com PlayableGraph próprio | Pausa, busca e velocidade sem Animator Controller por clip | Um estado de Animator por clip |
 
 ## 5.2 Riscos técnicos
 
@@ -39,6 +44,10 @@ tabela é o resumo.
 | R11 | Condições de corrida em cargas assíncronas (cliques rápidos) | Médio | Tokens de geração no assembler, cancelamento por escopo, testes PlayMode específicos. |
 | R12 | Conteúdo da comunidade com qualidade ou licença inadequada | Médio | Validador obrigatório no CI, política de licenças ([03 §3.7](03-pipeline-de-conteudo.md#37-licenças-e-atribuição)), revisão de arte. |
 | R13 | Merge de cenas e prefabs entre vários contribuidores | Baixo/Médio | Uma única cena enxuta, conteúdo em prefabs pequenos por item, Smart Merge configurado. |
+| R14 | FBX encontrados na internet sem licença clara ou de origem proprietária (Adobe Fuse/Mixamo, Daz, CC) | Alto (jurídico) | Checklist de [07 §7.0](07-personalizacao.md#70-avaliando-corpos-cabelos-e-roupas-encontrados-fbx); sem licença CC0/CC-BY, só como referência ou teste local em `SourceAssets/_local/` (ignorado pelo git). |
+| R15 | Escala não uniforme de ossos deforma os filhos (a Unity não compensa) | Médio | Compensação inversa nos filhos alinhados; `Offset` onde não alinham; limites de slider; validar na Fase 3. |
+| R16 | Memória das camadas de pintura (~16 MB por camada 2048² RGBA) | Médio | Limite de camadas por alvo, composição em uma textura final, liberação de camadas fora do histórico de undo. |
+| R17 | Preset `.weld` malicioso (zip bomb, caminhos `..`) | Médio (segurança) | Nomes de anexo restritos, limite de entradas e de bytes reais descompactados; testes cobrem os casos. |
 
 ## 5.3 Questões em aberto
 
