@@ -1,0 +1,54 @@
+name: Proposta de conteúdo
+description: Propor uma roupa, cabelo, acessório ou animação para o content pack oficial.
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Leia o [pipeline de conteúdo](https://github.com/PedroCavalcanti-coder/Weld-Studio/blob/main/docs/03-pipeline-de-conteudo.md) antes de começar.
+        Só aceitamos assets CC0 ou CC-BY 4.0 (CC-BY-SA caso a caso).
+  - type: input
+    id: name
+    attributes:
+      label: Nome do item
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Tipo
+      options:
+        - Roupa
+        - Cabelo
+        - Acessório
+        - Animação
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Licença (SPDX)
+      placeholder: CC0-1.0
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Origem / autor
+      description: Link para o asset original ou "autoria própria".
+    validations:
+      required: true
+  - type: textarea
+    id: preview
+    attributes:
+      label: Imagens
+      description: Renders ou prints do item.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Usa o esqueleto do corpo base
+        - label: Tem blendshapes de conformidade com os nomes do corpo
+        - label: Não contém código ou assets com licença incompatível
+          required: true

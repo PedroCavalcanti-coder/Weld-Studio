@@ -1,0 +1,148 @@
+# -----------------------------------------------------------------------------
+# Weld Studio: Git attributes
+# Git LFS is required: run `git lfs install` once per machine before cloning.
+# LFS patterns are case-insensitive ([Ff][Bb][Xx]) so files from any OS match.
+# -----------------------------------------------------------------------------
+
+* text=auto
+
+# --- Text sources ---------------------------------------------------------------
+*.cs               text eol=lf diff=csharp
+*.hlsl             text eol=lf
+*.cginc            text eol=lf
+*.shader           text eol=lf
+*.compute          text eol=lf
+*.uss              text eol=lf
+*.uxml             text eol=lf
+*.tss              text eol=lf
+*.json             text eol=lf
+*.asmdef           text eol=lf
+*.asmref           text eol=lf
+*.inputactions     text eol=lf
+*.shadergraph      text eol=lf
+*.shadersubgraph   text eol=lf
+*.vfx              text eol=lf
+*.md               text eol=lf
+*.txt              text eol=lf
+*.py               text eol=lf
+*.sh               text eol=lf
+*.yml              text eol=lf
+*.yaml             text eol=lf
+*.xml              text eol=lf
+*.mhclo            text eol=lf
+*.mhmat            text eol=lf
+*.mhskel           text eol=lf
+*.mhpxy            text eol=lf
+*.mhm              text eol=lf
+*.proxy            text eol=lf
+*.target           text eol=lf
+*.bat              text eol=crlf
+
+# --- Unity YAML (Force Text serialization) --------------------------------------
+# Merged with Unity Smart Merge when configured (docs/06-setup.md); otherwise git
+# falls back to its normal text merge.
+*.meta             text eol=lf merge=unityyamlmerge
+*.unity            text eol=lf merge=unityyamlmerge
+*.prefab           text eol=lf merge=unityyamlmerge
+*.asset            text eol=lf merge=unityyamlmerge
+*.mat              text eol=lf merge=unityyamlmerge
+*.anim             text eol=lf merge=unityyamlmerge
+*.controller       text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.mask             text eol=lf merge=unityyamlmerge
+*.physicMaterial   text eol=lf merge=unityyamlmerge
+*.physicsMaterial  text eol=lf merge=unityyamlmerge
+*.playable         text eol=lf merge=unityyamlmerge
+*.signal           text eol=lf merge=unityyamlmerge
+*.preset           text eol=lf merge=unityyamlmerge
+*.lighting         text eol=lf merge=unityyamlmerge
+*.renderTexture    text eol=lf merge=unityyamlmerge
+*.spriteatlas      text eol=lf merge=unityyamlmerge
+*.spriteatlasv2    text eol=lf merge=unityyamlmerge
+*.terrainlayer     text eol=lf merge=unityyamlmerge
+*.brush            text eol=lf merge=unityyamlmerge
+*.flare            text eol=lf merge=unityyamlmerge
+*.guiskin          text eol=lf merge=unityyamlmerge
+*.fontsettings     text eol=lf merge=unityyamlmerge
+*.cubemap          text eol=lf merge=unityyamlmerge
+*.giparams         text eol=lf merge=unityyamlmerge
+*.mixer            text eol=lf merge=unityyamlmerge
+
+# --- Unity files that stay binary even with Force Text ---------------------------
+**/LightingData.asset filter=lfs diff=lfs merge=lfs -text
+**/NavMesh*.asset     filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: 3D models and DCC sources ---------------------------------------------
+*.[fF][bB][xX]                 filter=lfs diff=lfs merge=lfs -text
+*.[oO][bB][jJ]                 filter=lfs diff=lfs merge=lfs -text
+*.[bB][lL][eE][nN][dD]         filter=lfs diff=lfs merge=lfs -text
+*.[dD][aA][eE]                 filter=lfs diff=lfs merge=lfs -text
+*.3[dD][sS]                    filter=lfs diff=lfs merge=lfs -text
+*.[mM][aA][xX]                 filter=lfs diff=lfs merge=lfs -text
+*.[mM][aA]                     filter=lfs diff=lfs merge=lfs -text
+*.[mM][bB]                     filter=lfs diff=lfs merge=lfs -text
+*.[cC]4[dD]                    filter=lfs diff=lfs merge=lfs -text
+*.[aA][bB][cC]                 filter=lfs diff=lfs merge=lfs -text
+*.[gG][lL][bB]                 filter=lfs diff=lfs merge=lfs -text
+*.[gG][lL][tT][fF]             filter=lfs diff=lfs merge=lfs -text
+*.[bB][iI][nN]                 filter=lfs diff=lfs merge=lfs -text
+*.[uU][sS][dD]                 filter=lfs diff=lfs merge=lfs -text
+*.[uU][sS][dD][aA]             filter=lfs diff=lfs merge=lfs -text
+*.[uU][sS][dD][cC]             filter=lfs diff=lfs merge=lfs -text
+*.[uU][sS][dD][zZ]             filter=lfs diff=lfs merge=lfs -text
+*.[nN][pP][zZ]                 filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: Textures and images ---------------------------------------------------
+*.[pP][nN][gG]                 filter=lfs diff=lfs merge=lfs -text
+*.[jJ][pP][gG]                 filter=lfs diff=lfs merge=lfs -text
+*.[jJ][pP][eE][gG]             filter=lfs diff=lfs merge=lfs -text
+*.[tT][gG][aA]                 filter=lfs diff=lfs merge=lfs -text
+*.[tT][iI][fF]                 filter=lfs diff=lfs merge=lfs -text
+*.[tT][iI][fF][fF]             filter=lfs diff=lfs merge=lfs -text
+*.[pP][sS][dD]                 filter=lfs diff=lfs merge=lfs -text
+*.[eE][xX][rR]                 filter=lfs diff=lfs merge=lfs -text
+*.[hH][dD][rR]                 filter=lfs diff=lfs merge=lfs -text
+*.[bB][mM][pP]                 filter=lfs diff=lfs merge=lfs -text
+*.[gG][iI][fF]                 filter=lfs diff=lfs merge=lfs -text
+*.[wW][eE][bB][pP]             filter=lfs diff=lfs merge=lfs -text
+*.[dD][dD][sS]                 filter=lfs diff=lfs merge=lfs -text
+*.[kK][tT][xX]                 filter=lfs diff=lfs merge=lfs -text
+*.[kK][tT][xX]2                filter=lfs diff=lfs merge=lfs -text
+*.[iI][fF][fF]                 filter=lfs diff=lfs merge=lfs -text
+*.[pP][iI][cC][tT]             filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: Substance and painting ------------------------------------------------
+*.[sS][bB][sS][aA][rR]         filter=lfs diff=lfs merge=lfs -text
+*.[sS][pP][pP]                 filter=lfs diff=lfs merge=lfs -text
+*.[sS][pP][sS][mM]             filter=lfs diff=lfs merge=lfs -text
+*.[kK][rR][aA]                 filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: Audio and video -------------------------------------------------------
+*.[wW][aA][vV]                 filter=lfs diff=lfs merge=lfs -text
+*.[mM][pP]3                    filter=lfs diff=lfs merge=lfs -text
+*.[oO][gG][gG]                 filter=lfs diff=lfs merge=lfs -text
+*.[aA][iI][fF]                 filter=lfs diff=lfs merge=lfs -text
+*.[aA][iI][fF][fF]             filter=lfs diff=lfs merge=lfs -text
+*.[fF][lL][aA][cC]             filter=lfs diff=lfs merge=lfs -text
+*.[mM][pP]4                    filter=lfs diff=lfs merge=lfs -text
+*.[mM][oO][vV]                 filter=lfs diff=lfs merge=lfs -text
+*.[wW][eE][bB][mM]             filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: Fonts -----------------------------------------------------------------
+*.[tT][tT][fF]                 filter=lfs diff=lfs merge=lfs -text
+*.[oO][tT][fF]                 filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: Native libraries and binaries -----------------------------------------
+*.[dD][lL][lL]                 filter=lfs diff=lfs merge=lfs -text
+*.[sS][oO]                     filter=lfs diff=lfs merge=lfs -text
+*.[dD][yY][lL][iI][bB]         filter=lfs diff=lfs merge=lfs -text
+*.[aA]                         filter=lfs diff=lfs merge=lfs -text
+*.[eE][xX][eE]                 filter=lfs diff=lfs merge=lfs -text
+*.[bB][yY][tT][eE][sS]         filter=lfs diff=lfs merge=lfs -text
+
+# --- LFS: Archives and documents ------------------------------------------------
+*.[zZ][iI][pP]                 filter=lfs diff=lfs merge=lfs -text
+*.7[zZ]                        filter=lfs diff=lfs merge=lfs -text
+*.[gG][zZ]                     filter=lfs diff=lfs merge=lfs -text
+*.[rR][aA][rR]                 filter=lfs diff=lfs merge=lfs -text
+*.[pP][dD][fF]                 filter=lfs diff=lfs merge=lfs -text

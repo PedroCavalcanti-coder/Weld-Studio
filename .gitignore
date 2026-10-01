@@ -104,3 +104,28 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# -----------------------------------------------------------------------------
+# Weld Studio
+# -----------------------------------------------------------------------------
+# Paid / non-redistributable third-party assets: every contributor imports them
+# locally from the Asset Store. They must never be committed.
+/[Aa]ssets/MagicaCloth2/
+/[Aa]ssets/MagicaCloth2.meta
+
+# Blender numbered backups (.blend1 is already covered above)
+*.blend[2-9]
+
+# Atomic-save leftovers from interrupted preset writes
+*.weld.json.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# CI-only .NET projects under Tools/ are versioned (the Unity-generated ones above are not)
+!/Tools/**/*.csproj
+/Tools/**/[Bb]in/
+/Tools/**/[Oo]bj/
+/Tools/**/TestResults/

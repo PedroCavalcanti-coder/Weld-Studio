@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentação
+    url: https://github.com/PedroCavalcanti-coder/Weld-Studio/tree/main/docs
+    about: Arquitetura, roadmap, pipeline de conteúdo e setup.

@@ -1,0 +1,44 @@
+name: Bug
+description: Algo não funciona como deveria.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu
+      description: Descreva o problema. Prints ou vídeos ajudam muito.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Abrir o catálogo de roupas
+        2. Equipar "Vestido longo"
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão do Weld Studio ou commit
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Sistema operacional e GPU
+      placeholder: Windows 11, RTX 3060
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Console da Unity ou Player.log, se houver.
+      render: text

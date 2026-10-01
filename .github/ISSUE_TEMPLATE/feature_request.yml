@@ -1,0 +1,38 @@
+name: Ideia ou funcionalidade
+description: Sugira uma melhoria para o Weld Studio.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema isso resolve
+      description: Conte o que você quer fazer e o que impede hoje.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Como você imagina a solução. Se mexer na arquitetura, indique quais partes (veja docs/01-arquitetura.md).
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Interface
+        - Personagem / montagem
+        - Blendshapes / modificadores
+        - Física
+        - Animação / IK
+        - Renderização
+        - Presets / exportação
+        - Conteúdo / pipeline
+        - Outro
+    validations:
+      required: true
