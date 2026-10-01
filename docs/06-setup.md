@@ -1,0 +1,99 @@
+# 6. Setup
+
+> Status: o projeto Unity **ainda não foi criado** (tarefa da Fase 0). A seção 6.3 descreve como criá-lo uma vez;
+> depois disso, contribuidores só seguem 6.1, 6.2 e 6.4.
+
+## 6.1 Requisitos
+
+| Ferramenta | Versão | Para quê |
+|------------|--------|----------|
+| Unity Hub + **Unity 6.3 LTS** | a versão exata fica em `ProjectSettings/ProjectVersion.txt` | Editor |
+| Git | recente | Versionamento |
+| **Git LFS** | 3.x | Obrigatório: todo binário do projeto está no LFS |
+| IDE C# | Rider, Visual Studio ou VS Code (com extensão Unity) | Código |
+| Blender + MPFB2 | Blender LTS atual | Apenas para quem produz conteúdo |
+| Magica Cloth 2 | Asset Store | Opcional e pago: só para quem trabalha no módulo de física avançada |
+
+## 6.2 Clonar
+
+```bash
+git lfs install                 # uma vez por máquina
+git clone https://github.com/PedroCavalcanti-coder/Weld-Studio.git
+cd Weld-Studio
+git lfs pull                    # garante que os binários vieram
+```
+
+Se uma textura ou FBX aparecer na Unity como arquivo de texto pequeno ou corrompido, o LFS não baixou: rode
+`git lfs pull`.
+
+## 6.3 Criar o projeto Unity (uma única vez, Fase 0)
+
+A Unity Hub não cria projeto em pasta que já tem arquivos. Por isso:
+
+1. Na Unity Hub, crie um projeto **Unity 6.3 LTS** com o template **Universal 3D** numa pasta temporária.
+2. Copie para a raiz do repositório: `ProjectSettings/`, `Packages/` e `Assets/Settings/` (com os `.meta`, que
+   preservam as referências do URP).
+3. Abra a raiz do repositório na Unity Hub (*Add → Add project from disk*).
+4. Dentro da Unity:
+   1. mova `Assets/Settings` para `Assets/WeldStudio/Settings` (movendo pelo Editor os GUIDs são preservados);
+   2. apague o conteúdo de exemplo do template;
+   3. crie `Assets/WeldStudio/Scenes/Boot.unity`.
+5. Confira em *Project Settings*:
+   - **Editor → Asset Serialization: Force Text**
+   - **Version Control → Mode: Visible Meta Files**
+   - **Player → Other Settings → Color Space: Linear**
+   - **Graphics / Quality:** URP Asset de desktop atribuído. Os assets `Mobile_*` do template podem ser removidos
+     depois de ajustar os níveis de qualidade.
+6. Instale os pacotes (6.5), deixe a Unity gerar os `.meta` dos arquivos já existentes em
+   `Assets/WeldStudio/Runtime/Core/` e commite tudo, inclusive o `packages-lock.json`.
+
+## 6.4 Smart Merge (recomendado)
+
+O `.gitattributes` (Fase 0) marca o YAML da Unity com `merge=unityyamlmerge`. Sem a configuração abaixo, o Git usa
+o merge de texto comum, o que funciona mas gera mais conflitos. Para habilitar:
+
+```bash
+git config --global merge.unityyamlmerge.name "Unity SmartMerge"
+git config --global merge.unityyamlmerge.driver "'<CAMINHO_DO_UnityYAMLMerge>' merge -p %O %B %A %A"
+git config --global merge.unityyamlmerge.recursive binary
+```
+
+Onde fica o `UnityYAMLMerge` (troque `<versão>` pela versão instalada):
+
+| SO | Caminho |
+|----|---------|
+| Windows | `C:\Program Files\Unity\Hub\Editor\<versão>\Editor\Data\Tools\UnityYAMLMerge.exe` |
+| macOS | `/Applications/Unity/Hub/Editor/<versão>/Unity.app/Contents/Tools/UnityYAMLMerge` |
+| Linux | `~/Unity/Hub/Editor/<versão>/Editor/Data/Tools/UnityYAMLMerge` |
+
+## 6.5 Pacotes
+
+As versões são as compatíveis com a Unity 6.3 sugeridas pelo Package Manager, travadas no `packages-lock.json`.
+
+| Pacote | Fase | Uso |
+|--------|------|-----|
+| `com.unity.render-pipelines.universal` | 0 | URP (vem com o template) |
+| `com.unity.addressables` | 0 | Conteúdo sob demanda |
+| `com.unity.nuget.newtonsoft-json` | 0 | Presets JSON |
+| `com.unity.inputsystem` | 0 | Câmera e atalhos (vem com o template) |
+| `com.unity.test-framework` | 0 | Testes EditMode e PlayMode |
+| `jp.hadashikick.vcontainer` | 0 | Injeção de dependência (via OpenUPM, `openupm add jp.hadashikick.vcontainer`, ou *Add package from git URL* com `https://github.com/hadashiA/VContainer.git?path=VContainer/Assets/VContainer#<tag>`, sempre fixando uma tag) |
+| `com.unity.animation.rigging` | 6 | IK |
+| `com.unity.memoryprofiler` | 2 | Verificação de vazamentos (desenvolvimento) |
+| `com.unity.test-framework.performance` | 2 | Testes de performance |
+| `com.unity.cloud.gltfast` | 9 | Export glTF/GLB (a avaliar) |
+| `com.unity.localization` | 9 | Tradução da UI |
+
+O UI Toolkit já vem embutido na Unity 6 e não precisa de pacote.
+
+**Magica Cloth 2 (opcional):** importe pela Asset Store. Ele fica em `Assets/MagicaCloth2/`, que está no
+`.gitignore`. A partir da Fase 7, um script de Editor detecta o plugin e ativa o define `WELD_MAGICACLOTH2`,
+habilitando o módulo `Assets/Modules/MagicaClothBridge/`.
+
+## 6.6 CI (Fase 0)
+
+GitHub Actions com as actions do GameCI (`unity-test-runner`, depois `unity-builder`):
+
+- checkout com `lfs: true` e cache de `Library/`;
+- exige secrets de licença da Unity no repositório (ver a documentação do GameCI para licença Personal);
+- roda testes EditMode e PlayMode em todo PR.
